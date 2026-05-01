@@ -13,10 +13,28 @@ app.use(express.json());
 const API_KEY = process.env.GEMINI_API_KEY;
 
 // ============================================
-// MENÚ PRINCIPAL (siempre se muestra al inicio)
+// DATOS REALES DEL NEGOCIO
 // ============================================
 
-const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema!**
+const NEGOCIO = {
+  nombre: 'Angelos Fresas con Crema y Minidonas',
+  pais: 'El Salvador',
+  direccion: 'Colonia Amatepec, Pasaje 1, Casa 30',
+  whatsapp: '61280902',
+  whatsappLink: 'https://wa.me/50361280902',
+  tiktok: '@angelos3900',
+  tiktokLink: 'https://www.tiktok.com/@angelos3900',
+  paginaWeb: 'https://tguw4a2gzlr42.kimi.page/',
+  horario: 'Lunes a Sábado: 10:00 AM — 8:00 PM\n• Domingos: 11:00 AM — 6:00 PM',
+  envioCiudad: '$3.00 (2-4 horas)',
+  envioDepartamentos: '$5.00 (24-48 horas)'
+};
+
+// ============================================
+// MENÚ PRINCIPAL
+// ============================================
+
+const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema y Minidonas!**
 
 Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 
@@ -26,7 +44,7 @@ Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 **3️⃣** Horario y ubicación
 **4️⃣** Envíos y métodos de pago
 **5️⃣** Promociones y descuentos
-**6️⃣** Contacto y WhatsApp
+**6️⃣** Contacto y redes sociales
 **0️⃣** Hablar con una persona
 
 👉 *Escribe el número de la opción que necesitas*`;
@@ -55,21 +73,18 @@ const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 
 🍓 **Fresas con Crema** — $5.00
-   El clásico favorito. Fresas frescas con crema batida artesanal.
+   Fresas frescas con crema batida artesanal. ¡El clásico que nunca falla!
 
-🧇 **Waffle con Fresas** — $7.00
-   Waffle belga crujiente con fresas y crema. ¡Perfecto para fotos!
+🍩 **Minidonas Preparadas** — $5.00
+   Deliciosas minidonas con toppings especiales. Crujientes por fuera, suaves por dentro.
 
-🥤 **Malteada de Fresas** — $4.00
-   Refrescante, cremosa y deliciosa. Ideal para el calor.
-
-🍫 **Brownie con Fresas** — $6.00
-   Intenso chocolate con fresas dulces. Para los amantes del dulce.
+🍓🍩 **Combo Fresas + Minidona** — $9.00
+   La mejor combinación: fresas con crema + minidona preparada.
 
 🎁 **Combo Familiar** — $16.00
-   2 Fresas con Crema + 2 Malteadas. Para compartir.
+   2 Fresas con Crema + 2 Minidonas. Para compartir en familia.
 
-➕ **Adicionales:** Chocolate, nueces, caramelo — $1.00 c/u
+➕ **Adicionales:** Chocolate, nueces, caramelo, sprinkles — $1.00 c/u
 
 💡 *¿Necesitas recomendación? Escribe **2** en el menú principal*`;
 
@@ -80,81 +95,78 @@ const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 const RECOMENDACIONES = {
   '1': `💕 **PARA UNA CITA ROMÁNTICA:**
 
-🥇 **Waffle con Fresas ($7)** ⭐ RECOMENDADO
-   • Visualmente hermoso para fotos 📸
-   • Elegante y sofisticado
-   • Se ve especial y cuidado
+🥇 **Fresas con Crema ($5)** ⭐ RECOMENDADO
+   • Visualmente hermosas para fotos 📸
+   • Elegante y romántico
+   • Perfecto para compartir dulcemente
 
-🥈 **Brownie con Fresas ($6)**
-   • Intenso sabor a chocolate
-   • Perfecto para compartir y crear momento íntimo
-   • Presentación elegante
+🥈 **Minidonas Preparadas ($5)**
+   • Originales y sorprendentes
+   • Diferente a lo común, ¡impacta!
 
-💡 *Extras: Podemos agregar chocolate derretido y envío a domicilio con nota especial.*
+💡 *Extras: Podemos agregar chocolate derretido y topping especial.*
 
-📲 ¿Quieres ordenar? Escríbenos por WhatsApp: +502-XXXX-XXXX`,
+📲 ¿Quieres ordenar? Escríbenos por WhatsApp: ${NEGOCIO.whatsapp}`,
 
   '2': `👶 **PARA NIÑOS:**
 
-🥇 **Malteada de Fresas ($4)** ⭐ FAVORITO
-   • Dulce, refrescante y les fascina
-   • Fácil de tomar, no se ensucian tanto
+🥇 **Minidonas Preparadas ($5)** ⭐ FAVORITO
+   • Les fascina la forma y los colores
+   • Fácil de comer, ¡no se ensucian tanto!
 
 🥈 **Fresas con Crema ($5)**
    • Clásico que todos aman
    • Pueden comer las fresas con las manos
 
-💡 *Los peques adoran la malteada. ¡Es nuestro bestseller infantil!*`,
+💡 *Los peques adoran las minidonas. ¡Son nuestro bestseller infantil!*`,
 
   '3': `🎁 **PARA REGALAR:**
 
-🥇 **Brownie con Fresas ($6)** ⭐ RECOMENDADO
-   • Presentación elegante y premium
+🥇 **Combo Fresas + Minidona ($9)** ⭐ RECOMENDADO
+   • Presentación elegante y variada
    • Se ve cariñoso y especial
 
 🥈 **Combo Familiar ($16)**
    • Para que compartan y disfruten juntos
    • Ideal para cumpleaños o aniversarios
 
-💡 *Podemos agregar una nota personalizada. ¡Escríbenos por WhatsApp!*`,
+💡 *Podemos preparar un empaque especial. ¡Escríbenos por WhatsApp!*`,
 
   '4': `🏠 **PARA COMPARTIR EN FAMILIA:**
 
 🥇 **Combo Familiar ($16)** ⭐ PERFECTO
-   • 2 Fresas con Crema + 2 Malteadas
+   • 2 Fresas con Crema + 2 Minidonas
    • 4 productos para todos
 
-🥈 **2 Waffles con Fresas ($14)**
-   • Cada uno tiene su waffle completo
-   • Más elaborado y especial
+🥈 **2 Combos Fresas + Minidona ($18)**
+   • Más variedad para todos
+   • Cada uno elige lo que quiere
 
 💡 *Ideal para reuniones, cumpleaños o domingos en familia.*`,
 
   '5': `🌞 **PARA EL CALOR:**
 
-🥇 **Malteada de Fresas ($4)** ⭐ REFRESCANTE
-   • Bebible, fría y deliciosa
-   • La favorita en verano
-
-🥈 **Fresas con Crema ($5)**
-   • Puedes pedirla extra fría ❄️
+🥇 **Fresas con Crema ($5)** ⭐ REFRESCANTE
    • Las fresas naturales refrescan
+   • Puedes pedirlas extra frías ❄️
 
-💡 *¡La malteada es la reina del verano! 🥤*`,
+🥈 **Minidonas ($5)**
+   • Deliciosas a cualquier temperatura
+   • Perfectas para merendar
+
+💡 *¡Las fresas son la reina del verano! 🍓*`,
 
   '6': `⚠️ **OPCIONES SIN AZÚCAR / DIABÉTICOS:**
 
 Lamentablemente, nuestros productos actuales contienen azúcar:
 • Crema endulzada en Fresas con Crema
-• Masa y crema en Waffle
-• Helado y leche en Malteada
-• Chocolate y azúcar en Brownie
+• Glaseado y toppings en Minidonas
 
 **Alternativas disponibles:**
 🍓 **Fresas naturales SIN crema** — Solo la fruta fresca
 
 **Consulta personalizada:**
-📲 WhatsApp: +502-XXXX-XXXX
+📲 WhatsApp: ${NEGOCIO.whatsapp}
 Podemos evaluar preparar algo especial según tus necesidades. 💚`,
 
   '7': `🌱 **OPCIONES VEGANAS:**
@@ -164,7 +176,7 @@ Nuestra crema contiene lácteos 🥛, pero tenemos alternativas:
 🍓 **Fresas naturales SIN crema** — 100% fruta fresca
 
 **Consulta personalizada:**
-📲 WhatsApp: +502-XXXX-XXXX
+📲 WhatsApp: ${NEGOCIO.whatsapp}
 
 Estamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿`
 };
@@ -175,22 +187,20 @@ Estamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿`
 
 const HORARIO_UBICACION = `🕐 **HORARIO Y UBICACIÓN:**
 
-📍 **Ubicación:** Ciudad de Guatemala, Zona 10
-🚚 **Delivery:** Disponible a toda la ciudad
+📍 **Dirección:** ${NEGOCIO.direccion}
+🇳🇮 **País:** ${NEGOCIO.pais}
+🚚 **Delivery:** Disponible
 
 ⏰ **Horario:**
-• Lunes a Sábado: 10:00 AM — 8:00 PM
-• Domingos: 11:00 AM — 6:00 PM
-• Festivos: Consultar disponibilidad
+• ${NEGOCIO.horario}
 
-📲 **WhatsApp:** +502-XXXX-XXXX
-📸 **Instagram:** @angelos.fresas`;
+📲 **WhatsApp:** ${NEGOCIO.whatsapp}`;
 
 const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
 
-📦 **Envíos:**
-• Ciudad de Guatemala: $3.00 (2-4 horas)
-• Departamentos: $5.00 (24-48 horas)
+📦 **Envíos en El Salvador:**
+• Ciudad: ${NEGOCIO.envioCiudad}
+• Departamentos: ${NEGOCIO.envioDepartamentos}
 • Pedido mínimo: $10.00
 • ¡Envío GRATIS en pedidos +$25!
 
@@ -199,7 +209,7 @@ const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
 • Transferencia bancaria
 • Tarjeta de crédito/débito
 • PayPal
-• Pago contra entrega (solo Ciudad de Guatemala)`;
+• Pago contra entrega (disponible en zona cercana)`;
 
 const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 
@@ -207,17 +217,21 @@ const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 • 20% de descuento en primera orden
    Código: **ANGELOS20**
 
-💡 *Aplica en compras directas por WhatsApp o en tienda.*`;
+💡 *Aplica en compras directas por WhatsApp o en tienda.*
+
+🔗 **Nuestra página web:** ${NEGOCIO.paginaWeb}`;
 
 const CONTACTO = `📞 **CONTÁCTANOS:**
 
-📲 **WhatsApp:** +502-XXXX-XXXX
+📲 **WhatsApp:** ${NEGOCIO.whatsapp}
+   👉 ${NEGOCIO.whatsappLink}
    (Pedidos, consultas, delivery)
 
-📸 **Instagram:** @angelos.fresas
-   (Fotos, promociones, novedades)
+🎵 **TikTok:** ${NEGOCIO.tiktok}
+   👉 ${NEGOCIO.tiktokLink}
+   (Videos, promociones, novedades)
 
-📘 **Facebook:** Fresas con Crema Angelos
+🌐 **Página Web:** ${NEGOCIO.paginaWeb}
 
 💬 *Responde rápido por WhatsApp para pedidos urgentes*`;
 
@@ -225,15 +239,17 @@ const HUMANO = `👩‍💼 **HABLAR CON UNA PERSONA:**
 
 Te conecto con nuestro equipo humano:
 
-📲 **WhatsApp:** +502-XXXX-XXXX
+📲 **WhatsApp:** ${NEGOCIO.whatsapp}
    Responden de lunes a sábado, 10am a 8pm
 
 ⏰ *Si es fuera de horario, te responderán al siguiente día hábil.*
 
-Gracias por preferir Angelos Fresas con Crema 🍓`;
+🔗 También puedes visitarnos en: ${NEGOCIO.paginaWeb}
+
+Gracias por preferir Angelos Fresas con Crema y Minidonas 🍓🍩`;
 
 // ============================================
-// DETECTOR DE INTENCIONES (MENÚ NUMÉRICO)
+// DETECTOR DE INTENCIONES
 // ============================================
 
 function detectarIntencion(mensaje) {
@@ -243,12 +259,12 @@ function detectarIntencion(mensaje) {
   if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|menu|inicio|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
   
   // NÚMEROS DEL MENÚ PRINCIPAL
-  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo)$/)) return 'productos';
+  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) return 'productos';
   if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) return 'submenu_recomendaciones';
-  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local)$/)) return 'horario_ubicacion';
-  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago)$/)) return 'envios_pagos';
+  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local|amatepec|pasaje|colonia)$/)) return 'horario_ubicacion';
+  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) return 'envios_pagos';
   if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
-  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|instagram|facebook|redes|hablar)$/)) return 'contacto';
+  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) return 'contacto';
   if (msg === '0' || msg.match(/^(persona|humano|agente|vendedor|empleado|hablar con alguien|atencion)$/)) return 'humano';
   
   // NÚMEROS DEL SUBMENÚ DE RECOMENDACIONES
@@ -261,10 +277,10 @@ function detectarIntencion(mensaje) {
   if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
   if (msg === '0' || msg.match(/^(volver|atras|menu principal|inicio|principal)$/)) return 'menu_principal';
   
-  // PREGUNTAS ESPECÍFICAS QUE VAN DIRECTO (sin menú)
+  // PREGUNTAS ESPECÍFICAS
   if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
   
-  // SI NO ENTIENDE → MENÚ PRINCIPAL
+  // SI NO ENTIENDE
   return 'no_entendido';
 }
 
@@ -288,7 +304,12 @@ const RESPUESTAS = {
   'rec_calor': RECOMENDACIONES['5'],
   'rec_sin_azucar': RECOMENDACIONES['6'],
   'rec_vegano': RECOMENDACIONES['7'],
-  'agradecimiento': '🍓 ¡Con gusto! Estoy aquí cuando me necesites. Escribe **hola** o **menu** para ver las opciones. ¡Que tengas un día dulce! 🍓✨',
+  'agradecimiento': `🍓 ¡Con gusto! Estoy aquí cuando me necesites.
+
+Escribe **hola** o **menu** para ver las opciones.
+O visita nuestra web: ${NEGOCIO.paginaWeb}
+
+¡Que tengas un día dulce! 🍓🍩✨`,
   'no_entendido': `🤔 No estoy segura de entender. ¿Puedes elegir una opción?
 
 ${MENU_PRINCIPAL}`
@@ -332,7 +353,7 @@ app.post('/chat', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({ 
     status: '✅ Angelos Chatbot activo',
-    mensaje: 'Backend funcionando correctamente 🍓',
+    mensaje: 'Backend funcionando correctamente 🍓🍩',
     timestamp: new Date().toISOString()
   });
 });
@@ -343,7 +364,7 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🍓 Servidor Angelos corriendo en http://localhost:${PORT}`);
+  console.log(`🍓🍩 Servidor Angelos corriendo en http://localhost:${PORT}`);
   console.log(`📋 Endpoints disponibles:`);
   console.log(`   GET  http://localhost:${PORT}/         (verificación)`);
   console.log(`   POST http://localhost:${PORT}/chat     (chatbot)`);
