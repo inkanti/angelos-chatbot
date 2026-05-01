@@ -17,7 +17,9 @@ app.use(express.json());
 // Inicializar Gemini con tu API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 //const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+//const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });gemini-pro
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
 
 // ============================================
 // BASE DE CONOCIMIENTO LOCAL (RESPUESTAS GRATIS)
