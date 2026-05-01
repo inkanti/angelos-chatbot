@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angelos Fresas con Crema 🍓</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Header de la marca */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .brand-header h1 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    .brand-header p {
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    /* Chat Container */
+    .chat-container {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #ff4757, #ff6348);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .chat-header .avatar {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .chat-header h2 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .chat-header .status {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #2ed573;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Quick Buttons */
+    .quick-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 15px 20px;
+      background: #fff5f5;
+      border-bottom: 1px solid #ffe0e0;
+    }
+
+    .quick-btn {
+      padding: 8px 16px;
+      border: 1.5px solid #ff4757;
+      background: white;
+      color: #ff4757;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quick-btn:hover {
+      background: #ff4757;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    }
+
+    /* Messages Area */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      animation: aparecer 0.4s ease;
+      word-wrap: break-word;
+    }
+
+    @keyframes aparecer {
+      from { 
+        opacity: 0; 
+        transform: translateY(15px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+
+    .message.bot {
+      background: white;
+      color: #2d3436;
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #ff4757, #ff6348);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* Typing Indicator */
+    .typing {
+      display: flex;
+      gap: 5px;
+      padding: 16px 20px;
+      align-self: flex-start;
+      background: white;
+      border-radius: 20px;
+      border-bottom-left-radius: 6px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      width: fit-content;
+    }
+
+    .typing span {
+      width: 10px;
+      height: 10px;
+      background: #ff4757;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(1) { animation-delay: 0s; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Input Area */
+    .chat-input {
+      padding: 15px 20px;
+      background: white;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 14px 20px;
+      border: 2px solid #e8e8e8;
+      border-radius: 30px;
+      outline: none;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .chat-input input:focus {
+      border-color: #ff4757;
+      box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+    }
+
+    .chat-input input::placeholder {
+      color: #b2bec3;
+    }
+
+    .send-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #ff4757, #ff6348);
+      color: white;
+      cursor: pointer;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+
+    .send-btn:hover {
+      transform: scale(1.1) rotate(-5deg);
+      box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Scrollbar styling */
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #ff4757;
+    }
+
+    /* Badge de fuente */
+    .source-badge {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+      font-weight: 600;
+    }
+
+    .source-local {
+      background: #2ed573;
+      color: white;
+    }
+
+    .source-gemini {
+      background: #ffa502;
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .chat-container {
+        height: 100vh;
+        border-radius: 0;
+      }
+      
+      body {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="brand-header">
+    <h1>🍓 Angelos</h1>
+    <p>Fresas con Crema</p>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="avatar">🍓</div>
+      <h2>Fresi</h2>
+      <div class="status">
+        <span class="status-dot"></span>
+        <span>Tu asistente virtual</span>
+      </div>
+    </div>
+
+    <div class="quick-buttons">
+      <button class="quick-btn" onclick="enviarRapido('¿Cuál es el menú?')">📋 Menú</button>
+      <button class="quick-btn" onclick="enviarRapido('¿Hacen envíos?')">🚚 Envíos</button>
+      <button class="quick-btn" onclick="enviarRapido('¿Cuánto cuesta?')">💰 Precios</button>
+      <button class="quick-btn" onclick="enviarRapido('¿Dónde están ubicados?')">📍 Ubicación</button>
+      <button class="quick-btn" onclick="enviarRapido('¿Qué promociones tienen?')">🎉 Promos</button>
+      <button class="quick-btn" onclick="enviarRapido('¿Cómo puedo pagar?')">💳 Pagos</button>
+    </div>
+
+    <div class="chat-messages" id="mensajes">
+      <div class="message bot">
+        ¡Hola! Soy Fresi 🍓 Tu asistente de Angelos Fresas con Crema.<br><br>
+        ¿En qué puedo ayudarte hoy? Puedo contarte sobre nuestro menú, precios, envíos y más.
+        <span class="message-time">Ahora</span>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input 
+        type="text" 
+        id="inputMensaje" 
+        placeholder="Escribe tu pregunta..." 
+        onkeypress="if(event.key==='Enter') enviarMensaje()"
+        autocomplete="off"
+      >
+      <button class="send-btn" onclick="enviarMensaje()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================
+  // CONFIGURACIÓN - Cambia esto al desplegar
+  // ============================================
+  
+  // LOCAL (desarrollo):
+  const API_URL = 'http://localhost:3000/chat';
+  
+  // PRODUCCIÓN (cuando subas el backend):
+  // const API_URL = 'https://TU-BACKEND.onrender.com/chat';
+
+  const mensajesDiv = document.getElementById('mensajes');
+  const input = document.getElementById('inputMensaje');
+
+  function obtenerHora() {
+    const ahora = new Date();
+    return ahora.toLocaleTimeString('es-GT', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  }
+
+  function agregarMensaje(texto, esBot, fuente = '') {
+    const div = document.createElement('div');
+    div.className = `message ${esBot ? 'bot' : 'user'}`;
+    
+    let html = texto.replace(/\n/g, '<br>');
+    
+    if (esBot && fuente) {
+      const badgeClass = fuente === 'local' ? 'source-local' : 'source-gemini';
+      const badgeText = fuente === 'local' ? 'INSTANTÁNEO' : 'IA';
+      html += `<span class="source-badge ${badgeClass}">${badgeText}</span>`;
+    }
+    
+    html += `<span class="message-time">${obtenerHora()}</span>`;
+    div.innerHTML = html;
+    
+    mensajesDiv.appendChild(div);
+    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+  }
+
+  function mostrarTyping() {
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.id = 'typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    mensajesDiv.appendChild(div);
+    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+  }
+
+  function ocultarTyping() {
+    const typing = document.getElementById('typing-indicator');
+    if (typing) typing.remove();
+  }
+
+  async function enviarMensaje() {
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    // Mostrar mensaje del usuario
+    agregarMensaje(texto, false);
+    input.value = '';
+    input.focus();
+
+    // Mostrar "escribiendo..."
+    mostrarTyping();
+
+    try {
+      const respuesta = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ mensaje: texto })
+      });
+
+      if (!respuesta.ok) {
+        throw new Error(`Error HTTP: ${respuesta.status}`);
+      }
+
+      const datos = await respuesta.json();
+      ocultarTyping();
+      
+      // Mostrar respuesta del bot con badge de fuente
+      agregarMensaje(datos.respuesta, true, datos.fuente || 'gemini');
+      
+      // Log para debug
+      console.log('📊 Respuesta:', {
+        tipo: datos.tipo,
+        fuente: datos.fuente,
+        texto: datos.respuesta.substring(0, 50) + '...'
+      });
+
+    } catch (error) {
+      console.error('❌ Error:', error);
+      ocultarTyping();
+      agregarMensaje(
+        '🍓 ¡Ups! Tuve un problemita de conexión. Verifica que el servidor esté corriendo o escríbenos por WhatsApp: +502-XXXX-XXXX',
+        true,
+        'error'
+      );
+    }
+  }
+
+  function enviarRapido(texto) {
+    input.value = texto;
+    enviarMensaje();
+  }
+
+  // Mensaje de bienvenida animado
+  setTimeout(() => {
+    input.focus();
+  }, 500);
+</script>
+
+</body>
+</html>
