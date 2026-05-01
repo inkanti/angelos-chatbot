@@ -1,5 +1,5 @@
 // ============================================
-// BACKEND - Chatbot Fresas con Crema Angelos
+// BACKEND - Chatbot Angelos con Menús Interactivos
 // ============================================
 
 const express = require('express');
@@ -10,142 +10,289 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============================================
-// CONFIGURACIÓN GEMINI - API v1beta
-// ============================================
-
 const API_KEY = process.env.GEMINI_API_KEY;
 
-// Función para llamar a Gemini directamente vía fetch (más compatible)
-async function callGemini(prompt) {
-  try {
-    const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 150
-          }
-        })
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Gemini API error:', errorData);
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Respuesta inesperada de Gemini');
-    }
-    
-  } catch (error) {
-    console.error('Error en callGemini:', error);
-    throw error;
-  }
-}
-
 // ============================================
-// BASE DE CONOCIMIENTO LOCAL (RESPUESTAS GRATIS)
+// MENÚ PRINCIPAL (siempre se muestra al inicio)
 // ============================================
 
-const FAQ = {
-  // --- INFORMACIÓN BÁSICA ---
-  precio: '🍓 **Menú Angelos:**\n• Fresas con Crema — $5.00\n• Waffle con Fresas — $7.00\n• Malteada de Fresas — $4.00\n• Brownie con Fresas — $6.00\n• Combo Familiar (2 Fresas + 2 Malteadas) — $16.00\n• Adicionales (chocolate, nueces, caramelo) — $1.00 c/u',
-  
-  horario: '🕐 **Horario de atención:**\n• Lunes a Sábado: 10:00 AM — 8:00 PM\n• Domingos: 11:00 AM — 6:00 PM\n• Festivos: Consultar disponibilidad',
-  
-  envio: '🚚 **Envíos:**\n• Ciudad de Guatemala: $3.00 (2-4 horas)\n• Departamentos: $5.00 (24-48 horas)\n• Pedido mínimo: $10.00\n• ¡Envío GRATIS en pedidos +$25!',
-  
-  ubicacion: '📍 **Ubicación:**\n• Ciudad de Guatemala, Zona 10\n• También tenemos delivery a domicilio\n• Puedes ordenar por WhatsApp y recoger en tienda',
-  
-  menu: '📋 **Nuestro Menú:**\n1. 🍓 Fresas con Crema — $5 (Clásico favorito)\n2. 🧇 Waffle Especial con Fresas — $7 (Crujiente y elegante)\n3. 🥤 Malteada de Fresas — $4 (Refrescante)\n4. 🍫 Brownie con Fresas — $6 (Intenso sabor chocolate)\n5. 🎁 Combo Familiar — $16 (2 Fresas + 2 Malteadas)',
-  
-  pago: '💳 **Métodos de pago:**\n• Efectivo\n• Transferencia bancaria\n• Tarjeta de crédito/débito\n• PayPal\n• Pago contra entrega (solo Ciudad de Guatemala)',
-  
-  contacto: '📞 **Contáctanos:**\n• WhatsApp: +502-XXXX-XXXX\n• Instagram: @angelos.fresas\n• Facebook: Fresas con Crema Angelos',
-  
-  promocion: '🎉 **Promoción del mes:**\n• Combo 2x1 en Fresas con Crema los martes\n• 20% de descuento en tu primera orden con código: ANGELOS20',
+const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema!**
 
-  // --- RECOMENDACIONES POR OCASIÓN (nuevas) ---
-  recomendacion: '🍓 **¿No sabes qué elegir? Te ayudo:**\n• 🥇 **Más vendido:** Fresas con Crema ($5) - El clásico que nunca falla\n• 💕 **Para una cita:** Waffle con Fresas ($7) - Elegante y delicioso\n• 🎁 **Para regalar:** Brownie con Fresas ($6) - Presentación especial\n• 👶 **Para niños:** Malteada de Fresas ($4) - ¡Les encanta!\n• 🏠 **Para compartir en familia:** Combo Familiar ($16) - 4 productos\n• 🌞 **Para el calor:** Malteada ($4) - Super refrescante\n\n¿Tienes alguna ocasión especial? ¡Dime y te recomiendo el perfecto!',
+Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 
-  cita_romantica: '💕 **Para una cita romántica te recomiendo:**\n\n🥇 **Waffle con Fresas ($7)** - Elegante, visualmente hermoso y delicioso\n🥈 **Brownie con Fresas ($6)** - Intenso, romántico y para compartir\n\nAmbos se ven increíbles en fotos 📸 y el sabor es inolvidable. ¡Puedes pedirlo con envío a domicilio para sorprender! 🚚',
+📋 **MENÚ DE OPCIONES:**
+**1️⃣** Ver productos y precios
+**2️⃣** Recomendaciones por ocasión
+**3️⃣** Horario y ubicación
+**4️⃣** Envíos y métodos de pago
+**5️⃣** Promociones y descuentos
+**6️⃣** Contacto y WhatsApp
+**0️⃣** Hablar con una persona
 
-  para_ninos: '👶 **Para los peques te recomiendo:**\n\n🥇 **Malteada de Fresas ($4)** - Dulce, refrescante y les fascina\n🥈 **Fresas con Crema ($5)** - Clásico que todos aman\n\n¡Son los favoritos de nuestros clientes más jóvenes! 🍓✨',
+👉 *Escribe el número de la opción que necesitas*`;
 
-  para_regalo: '🎁 **Para regalar te recomiendo:**\n\n🥇 **Brownie con Fresas ($6)** - Presentación elegante, sabor premium\n🥈 **Combo Familiar ($16)** - Para que compartan y disfruten juntos\n\nPodemos agregar una nota personalizada. ¡Escríbenos por WhatsApp! 💝',
+// ============================================
+// SUBMENÚ 2: RECOMENDACIONES
+// ============================================
 
-  para_compartir: '🏠 **Para compartir con familia/amigos:**\n\n🥇 **Combo Familiar ($16)** - 2 Fresas con Crema + 2 Malteadas\n🥈 **2 Waffles con Fresas ($14)** - Para que cada uno tenga el suyo\n\n¡Perfecto para reuniones, cumpleaños o simplemente un domingo especial! 🎉',
+const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 
-  sin_azucar: '⚠️ **Sobre opciones sin azúcar:**\n\nNuestros productos contienen azúcar natural de las fresas 🍓 y crema endulzada.\n\nTe recomiendo:\n• 🍓 **Fresas naturales sin crema** - Solo la fruta fresca\n• 📲 **Consulta personalizada** - Escríbenos por WhatsApp: +502-XXXX-XXXX\n\nPodemos preparar algo especial según tus necesidades. 💚',
+**1️⃣** Cita romántica 💕
+**2️⃣** Para niños 👶
+**3️⃣** Para regalar 🎁
+**4️⃣** Para compartir en familia 🏠
+**5️⃣** Para el calor 🌞
+**6️⃣** Opciones sin azúcar / diabéticos ⚠️
+**7️⃣** Opciones veganas 🌱
+**0️⃣** Volver al menú principal
 
-  vegano: '🌱 **Sobre opciones veganas:**\n\nNuestra crema contiene lácteos 🥛, pero tenemos alternativas:\n• 🍓 **Fresas naturales sin crema** - 100% fruta fresca\n• 📲 **Consulta personalizada** - Escríbenos por WhatsApp: +502-XXXX-XXXX\n\nEstamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿',
+👉 *Escribe el número de tu opción*`;
 
-  para_calor: '🌞 **Para el calor te recomiendo:**\n\n🥇 **Malteada de Fresas ($4)** - Refrescante, cremosa y deliciosa\n🥈 **Fresas con Crema ($5)** - Clásica, pero puedes pedirla extra fría ❄️\n\n¡La malteada es la favorita en verano! 🥤✨',
+// ============================================
+// RESPUESTAS DE PRODUCTOS
+// ============================================
 
-  mas_vendido: '🏆 **Nuestros más vendidos:**\n\n🥇 **Fresas con Crema ($5)** - El clásico irresistible\n🥈 **Waffle con Fresas ($7)** - El favorito de Instagram\n🥉 **Malteada de Fresas ($4)** - Perfecta para el calor\n\n¿Cuál te animas a probar? 🍓',
+const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 
-  diferencia_productos: '🤔 **¿Cuál elegir? Te explico las diferencias:**\n\n🍓 **Fresas con Crema ($5)** - Clásico, cremoso, equilibrado\n🧇 **Waffle ($7)** - Más elaborado, crujiente, para ocasiones especiales\n🥤 **Malteada ($4)** - Bebible, refrescante, para llevar\n🍫 **Brownie ($6)** - Intenso chocolate, para amantes del dulce\n\n¿Tienes alguna preferencia de sabor o textura? ¡Te ayudo! ✨',
+🍓 **Fresas con Crema** — $5.00
+   El clásico favorito. Fresas frescas con crema batida artesanal.
 
-  tamanio_porcion: '📏 **Tamaños de porción:**\n• 🍓 Fresas con Crema: Porción generosa (aprox. 200g de fresas)\n• 🧇 Waffle: Waffle belga completo con toppings\n• 🥤 Malteada: 16 oz (473ml) - Vaso grande\n• 🍫 Brownie: Porción cuadrada generosa\n\n¿Te gustaría algo más grande o más ligero? 🍓',
+🧇 **Waffle con Fresas** — $7.00
+   Waffle belga crujiente con fresas y crema. ¡Perfecto para fotos!
 
-  tiempo_preparacion: '⏱️ **Tiempo de preparación:**\n• 🍓 Fresas con Crema: 5-10 minutos\n• 🧇 Waffle: 10-15 minutos (se hace fresco)\n• 🥤 Malteada: 3-5 minutos\n• 🍫 Brownie: 5 minutos (ya preparado, solo armamos)\n\nPara pedidos grandes recomendamos ordenar con anticipación. ¡Pero siempre rápido! ⚡',
+🥤 **Malteada de Fresas** — $4.00
+   Refrescante, cremosa y deliciosa. Ideal para el calor.
 
-  fresas_frescas: '🍓 **Sobre nuestras fresas:**\n• Fresas frescas importadas de alta calidad\n• Preparadas el día de la orden\n• Lavadas y seleccionadas una por una\n• Temporada: Todo el año (importadas de climas óptimos)\n\n¡Dulces, jugosas y perfectas! ✨',
+🍫 **Brownie con Fresas** — $6.00
+   Intenso chocolate con fresas dulces. Para los amantes del dulce.
 
-  entrega_domicilio: '🚚 **Sobre entrega a domicilio:**\n• Ciudad de Guatemala: $3 (2-4 horas)\n• Departamentos: $5 (24-48 horas)\n• Pedido mínimo: $10\n• Gratis en pedidos +$25\n• Empaque especial para mantener frescura\n• Pago contra entrega disponible\n\n¡Llegamos rápido y todo perfecto! 📦',
+🎁 **Combo Familiar** — $16.00
+   2 Fresas con Crema + 2 Malteadas. Para compartir.
 
-  primera_vez: '👋 **¡Primera vez en Angelos? Bienvenido!**\n\nTe recomiendo empezar con:\n🥇 **Fresas con Crema ($5)** - Nuestro clásico, el favorito de todos\n\nY si quieres probar algo diferente:\n🥈 **Waffle con Fresas ($7)** - ¡Te sorprenderá!\n\nUsa el código **ANGELOS20** para 20% de descuento en tu primera orden 🎉'
+➕ **Adicionales:** Chocolate, nueces, caramelo — $1.00 c/u
+
+💡 *¿Necesitas recomendación? Escribe **2** en el menú principal*`;
+
+// ============================================
+// RESPUESTAS POR OCASIÓN
+// ============================================
+
+const RECOMENDACIONES = {
+  '1': `💕 **PARA UNA CITA ROMÁNTICA:**
+
+🥇 **Waffle con Fresas ($7)** ⭐ RECOMENDADO
+   • Visualmente hermoso para fotos 📸
+   • Elegante y sofisticado
+   • Se ve especial y cuidado
+
+🥈 **Brownie con Fresas ($6)**
+   • Intenso sabor a chocolate
+   • Perfecto para compartir y crear momento íntimo
+   • Presentación elegante
+
+💡 *Extras: Podemos agregar chocolate derretido y envío a domicilio con nota especial.*
+
+📲 ¿Quieres ordenar? Escríbenos por WhatsApp: +502-XXXX-XXXX`,
+
+  '2': `👶 **PARA NIÑOS:**
+
+🥇 **Malteada de Fresas ($4)** ⭐ FAVORITO
+   • Dulce, refrescante y les fascina
+   • Fácil de tomar, no se ensucian tanto
+
+🥈 **Fresas con Crema ($5)**
+   • Clásico que todos aman
+   • Pueden comer las fresas con las manos
+
+💡 *Los peques adoran la malteada. ¡Es nuestro bestseller infantil!*`,
+
+  '3': `🎁 **PARA REGALAR:**
+
+🥇 **Brownie con Fresas ($6)** ⭐ RECOMENDADO
+   • Presentación elegante y premium
+   • Se ve cariñoso y especial
+
+🥈 **Combo Familiar ($16)**
+   • Para que compartan y disfruten juntos
+   • Ideal para cumpleaños o aniversarios
+
+💡 *Podemos agregar una nota personalizada. ¡Escríbenos por WhatsApp!*`,
+
+  '4': `🏠 **PARA COMPARTIR EN FAMILIA:**
+
+🥇 **Combo Familiar ($16)** ⭐ PERFECTO
+   • 2 Fresas con Crema + 2 Malteadas
+   • 4 productos para todos
+
+🥈 **2 Waffles con Fresas ($14)**
+   • Cada uno tiene su waffle completo
+   • Más elaborado y especial
+
+💡 *Ideal para reuniones, cumpleaños o domingos en familia.*`,
+
+  '5': `🌞 **PARA EL CALOR:**
+
+🥇 **Malteada de Fresas ($4)** ⭐ REFRESCANTE
+   • Bebible, fría y deliciosa
+   • La favorita en verano
+
+🥈 **Fresas con Crema ($5)**
+   • Puedes pedirla extra fría ❄️
+   • Las fresas naturales refrescan
+
+💡 *¡La malteada es la reina del verano! 🥤*`,
+
+  '6': `⚠️ **OPCIONES SIN AZÚCAR / DIABÉTICOS:**
+
+Lamentablemente, nuestros productos actuales contienen azúcar:
+• Crema endulzada en Fresas con Crema
+• Masa y crema en Waffle
+• Helado y leche en Malteada
+• Chocolate y azúcar en Brownie
+
+**Alternativas disponibles:**
+🍓 **Fresas naturales SIN crema** — Solo la fruta fresca
+
+**Consulta personalizada:**
+📲 WhatsApp: +502-XXXX-XXXX
+Podemos evaluar preparar algo especial según tus necesidades. 💚`,
+
+  '7': `🌱 **OPCIONES VEGANAS:**
+
+Nuestra crema contiene lácteos 🥛, pero tenemos alternativas:
+
+🍓 **Fresas naturales SIN crema** — 100% fruta fresca
+
+**Consulta personalizada:**
+📲 WhatsApp: +502-XXXX-XXXX
+
+Estamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿`
 };
+
 // ============================================
-// DETECTOR DE INTENCIONES
+// OTRAS RESPUESTAS
+// ============================================
+
+const HORARIO_UBICACION = `🕐 **HORARIO Y UBICACIÓN:**
+
+📍 **Ubicación:** Ciudad de Guatemala, Zona 10
+🚚 **Delivery:** Disponible a toda la ciudad
+
+⏰ **Horario:**
+• Lunes a Sábado: 10:00 AM — 8:00 PM
+• Domingos: 11:00 AM — 6:00 PM
+• Festivos: Consultar disponibilidad
+
+📲 **WhatsApp:** +502-XXXX-XXXX
+📸 **Instagram:** @angelos.fresas`;
+
+const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
+
+📦 **Envíos:**
+• Ciudad de Guatemala: $3.00 (2-4 horas)
+• Departamentos: $5.00 (24-48 horas)
+• Pedido mínimo: $10.00
+• ¡Envío GRATIS en pedidos +$25!
+
+💳 **Métodos de pago:**
+• Efectivo
+• Transferencia bancaria
+• Tarjeta de crédito/débito
+• PayPal
+• Pago contra entrega (solo Ciudad de Guatemala)`;
+
+const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
+
+• Combo 2x1 en Fresas con Crema — **Todos los martes**
+• 20% de descuento en primera orden
+   Código: **ANGELOS20**
+
+💡 *Aplica en compras directas por WhatsApp o en tienda.*`;
+
+const CONTACTO = `📞 **CONTÁCTANOS:**
+
+📲 **WhatsApp:** +502-XXXX-XXXX
+   (Pedidos, consultas, delivery)
+
+📸 **Instagram:** @angelos.fresas
+   (Fotos, promociones, novedades)
+
+📘 **Facebook:** Fresas con Crema Angelos
+
+💬 *Responde rápido por WhatsApp para pedidos urgentes*`;
+
+const HUMANO = `👩‍💼 **HABLAR CON UNA PERSONA:**
+
+Te conecto con nuestro equipo humano:
+
+📲 **WhatsApp:** +502-XXXX-XXXX
+   Responden de lunes a sábado, 10am a 8pm
+
+⏰ *Si es fuera de horario, te responderán al siguiente día hábil.*
+
+Gracias por preferir Angelos Fresas con Crema 🍓`;
+
+// ============================================
+// DETECTOR DE INTENCIONES (MENÚ NUMÉRICO)
 // ============================================
 
 function detectarIntencion(mensaje) {
-  const msg = mensaje.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const msg = mensaje.toLowerCase().trim();
   
-  // INFORMACIÓN BÁSICA
-  if (msg.match(/precio|cuanto|cuesta|vale|costo|menu|catalogo|productos/)) return 'precio';
-  if (msg.match(/hora|horario|abierto|cierran|atienden|dia|domingo|sabado/)) return 'horario';
-  if (msg.match(/envio|delivery|mandan|envian|domicilio|reparto|zona/)) return 'envio';
-  if (msg.match(/donde|ubicacion|direccion|local|tienda|queda|encuentran|maps/)) return 'ubicacion';
-  if (msg.match(/menu|tienen|opciones|que venden|especialidades|platillos/)) return 'menu';
-  if (msg.match(/pago|pagar|tarjeta|efectivo|transferencia|paypal|contra entrega/)) return 'pago';
-  if (msg.match(/contacto|whatsapp|telefono|llamar|instagram|facebook|redes/)) return 'contacto';
-  if (msg.match(/promo|descuento|oferta|descuentos|2x1|gratis|codigo/)) return 'promocion';
+  // SALUDOS Y MENÚ PRINCIPAL
+  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|menu|inicio|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
   
-  // RECOMENDACIONES POR OCASIÓN (nuevas)
-  if (msg.match(/recomienda|recomiendas|que me recomiendas|que elegir|que pedir|que comprar|no se que|indeciso|ayudame a elegir/)) return 'recomendacion';
-  if (msg.match(/cita|romantica|novia|novio|pareja|san valentin|aniversario|enamorados/)) return 'cita_romantica';
-  if (msg.match(/nino|ninos|peque|peques|bebe|infantil|hijo|hija|escolar/)) return 'para_ninos';
-  if (msg.match(/regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple/)) return 'para_regalo';
-  if (msg.match(/compartir|familia|amigos|reunion|fiesta|grupo|varios/)) return 'para_compartir';
-  if (msg.match(/sin azucar|diabetico|diabetes|bajo azucar|light|diet/)) return 'sin_azucar';
-  if (msg.match(/vegano|vegana|sin lacteos|sin leche|sin crema|plant based/)) return 'vegano';
-  if (msg.match(/calor|refrescante|frio|verano|sed|bebida/)) return 'para_calor';
-  if (msg.match(/mas vendido|popular|favorito|mejor|top|recomendado/)) return 'mas_vendido';
-  if (msg.match(/diferencia|cual es mejor|que diferencia|comparar|versus|vs/)) return 'diferencia_productos';
-  if (msg.match(/tamano|porcion|grande|pequeno|cuanto trae|cuanto es/)) return 'tamanio_porcion';
-  if (msg.match(/tiempo|demora|rapido|lento|cuanto tarda|preparacion/)) return 'tiempo_preparacion';
-  if (msg.match(/frescas|frescura|calidad|de donde|origen|importadas/)) return 'fresas_frescas';
-  if (msg.match(/domicilio|entrega|llegan|mandan a casa|a domicilio/)) return 'entrega_domicilio';
-  if (msg.match(/primera vez|nuevo|nunca he|primera orden|nuevo cliente/)) return 'primera_vez';
+  // NÚMEROS DEL MENÚ PRINCIPAL
+  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo)$/)) return 'productos';
+  if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) return 'submenu_recomendaciones';
+  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local)$/)) return 'horario_ubicacion';
+  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago)$/)) return 'envios_pagos';
+  if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
+  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|instagram|facebook|redes|hablar)$/)) return 'contacto';
+  if (msg === '0' || msg.match(/^(persona|humano|agente|vendedor|empleado|hablar con alguien|atencion)$/)) return 'humano';
   
-  // Necesita IA (pregunta compleja no cubierta)
-  return 'ia';
+  // NÚMEROS DEL SUBMENÚ DE RECOMENDACIONES
+  if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) return 'rec_cita';
+  if (msg === '2' || msg.match(/^(ninos|niños|peques|bebe|infantil|hijo|hija|escolar)$/)) return 'rec_ninos';
+  if (msg === '3' || msg.match(/^(regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple)$/)) return 'rec_regalo';
+  if (msg === '4' || msg.match(/^(compartir|familia|amigos|reunion|fiesta|grupo|varios)$/)) return 'rec_compartir';
+  if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) return 'rec_calor';
+  if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) return 'rec_sin_azucar';
+  if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
+  if (msg === '0' || msg.match(/^(volver|atras|menu principal|inicio|principal)$/)) return 'menu_principal';
+  
+  // PREGUNTAS ESPECÍFICAS QUE VAN DIRECTO (sin menú)
+  if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
+  
+  // SI NO ENTIENDE → MENÚ PRINCIPAL
+  return 'no_entendido';
 }
+
+// ============================================
+// RESPUESTAS RÁPIDAS
+// ============================================
+
+const RESPUESTAS = {
+  'menu_principal': MENU_PRINCIPAL,
+  'productos': PRODUCTOS,
+  'submenu_recomendaciones': SUBMENU_RECOMENDACIONES,
+  'horario_ubicacion': HORARIO_UBICACION,
+  'envios_pagos': ENVIOS_PAGOS,
+  'promociones': PROMOCIONES,
+  'contacto': CONTACTO,
+  'humano': HUMANO,
+  'rec_cita': RECOMENDACIONES['1'],
+  'rec_ninos': RECOMENDACIONES['2'],
+  'rec_regalo': RECOMENDACIONES['3'],
+  'rec_compartir': RECOMENDACIONES['4'],
+  'rec_calor': RECOMENDACIONES['5'],
+  'rec_sin_azucar': RECOMENDACIONES['6'],
+  'rec_vegano': RECOMENDACIONES['7'],
+  'agradecimiento': '🍓 ¡Con gusto! Estoy aquí cuando me necesites. Escribe **hola** o **menu** para ver las opciones. ¡Que tengas un día dulce! 🍓✨',
+  'no_entendido': `🤔 No estoy segura de entender. ¿Puedes elegir una opción?
+
+${MENU_PRINCIPAL}`
+};
 
 // ============================================
 // ENDPOINT PRINCIPAL DEL CHATBOT
@@ -156,84 +303,29 @@ app.post('/chat', async (req, res) => {
   
   if (!mensaje || mensaje.trim() === '') {
     return res.json({
-      respuesta: '¡Hola! 🍓 Soy Fresi, tu asistente de Angelos Fresas con Crema. ¿En qué puedo ayudarte hoy?',
-      tipo: 'bienvenida',
+      respuesta: MENU_PRINCIPAL,
+      tipo: 'menu',
       fuente: 'local'
     });
   }
   
   const intencion = detectarIntencion(mensaje);
   
-  // ✅ RESPUESTA LOCAL (GRATIS)
-  if (intencion !== 'ia') {
+  // ✅ RESPUESTA LOCAL INMEDIATA (100% GRATIS)
+  if (RESPUESTAS[intencion]) {
     return res.json({
-      respuesta: FAQ[intencion],
-      tipo: 'faq',
+      respuesta: RESPUESTAS[intencion],
+      tipo: 'menu',
       fuente: 'local'
     });
   }
   
-  // 🤖 RESPUESTA CON GEMINI API v1beta
-  try {
-    const prompt = `Eres "Fresi" 🍓, la asistente virtual amable, entusiasta y EXPERTA en postres de "Angelos Fresas con Crema", un negocio de postres con fresas en Guatemala.
-
-TU PERSONALIDAD:
-- Eres una vendedora experta que conoce PERFECTAMENTE cada producto
-- Usas emojis de fresa 🍓 y corazones ❤️
-- Eres cálida, cercana y profesional
-- SIEMPRE das recomendaciones personalizadas según la ocasión del cliente
-- Nunca respondes solo "Hola" o "¡Hola!" - siempre añades valor
-
-INFORMACIÓN DEL NEGOCIO:
-- Menú: 
-  * Fresas con Crema ($5) - Clásico, cremoso, perfecto para cualquier ocasión
-  * Waffle con Fresas ($7) - Crujiente waffle belga con fresas frescas y crema
-  * Malteada de Fresas ($4) - Refrescante, ideal para el calor
-  * Brownie con Fresas ($6) - Intenso sabor a chocolate con fresas dulces
-  * Combo Familiar: 2 Fresas + 2 Malteadas ($16) - Perfecto para compartir
-- Horario: Lun-Sab 10am-8pm, Dom 11am-6pm
-- Ubicación: Ciudad de Guatemala, Zona 10
-- Envíos: Ciudad $3 (2-4h), Departamentos $5 (24-48h), mínimo $10, gratis +$25
-- Pagos: Efectivo, transferencia, tarjeta, PayPal, contra entrega (solo ciudad)
-- WhatsApp: +502-XXXX-XXXX
-- Instagram: @angelos.fresas
-
-REGLAS DE RECOMENDACIÓN:
-- Si preguntan "qué me recomiendas" o "para una cita": Sugiere Waffle con Fresas ($7) o Brownie con Fresas ($6) - son los más elegantes y románticos
-- Si preguntan "para el calor" o "refrescante": Sugiere Malteada de Fresas ($4)
-- Si preguntan "clásico" o "seguro": Sugiere Fresas con Crema ($5)
-- Si preguntan "para compartir" o "familia": Sugiere Combo Familiar ($16)
-- Si preguntan "sin azúcar" o "diabético": Sé honesta - "Nuestros productos contienen azúcar natural de las fresas y crema endulzada. Te recomiendo consultar con nosotros por WhatsApp para opciones personalizadas 🍓"
-- Si preguntan "vegano" o "sin lácteos": "Nuestra crema contiene lácteos, pero podemos prepararte fresas naturales sin crema. Escríbenos por WhatsApp 🍓"
-- Si preguntan "para niños": Sugiere Malteada ($4) o Fresas con Crema ($5) - son los favoritos de los peques
-- Si preguntan "para regalo": Sugiere Brownie con Fresas ($6) - viene presentado elegantemente
-
-REGLAS IMPORTANTES:
-- Responde en español, 2-4 oraciones máximo
-- Sé muy amable, usa emojis de fresa 🍓
-- SIEMPRE da una recomendación específica con precio cuando preguntan "qué me recomiendas"
-- Si no sabes algo, sugiere contactar por WhatsApp: +502-XXXX-XXXX
-- No inventes precios, promociones ni información falsa
-
-El cliente dice: "${mensaje}"
-
-Responde como Fresi:`;
-    const respuestaIA = await callGemini(prompt);
-    
-    res.json({
-      respuesta: respuestaIA,
-      tipo: 'ia',
-      fuente: 'gemini'
-    });
-    
-  } catch (error) {
-    console.error('Error Gemini:', error);
-    res.json({
-      respuesta: '🍓 ¡Ups! Tuve un problemita técnico. Por favor escríbenos por WhatsApp: +503 78195474 o intenta de nuevo.',
-      tipo: 'error',
-      fuente: 'error'
-    });
-  }
+  // Si llega aquí, algo raro pasó
+  res.json({
+    respuesta: MENU_PRINCIPAL,
+    tipo: 'menu',
+    fuente: 'local'
+  });
 });
 
 // Endpoint de verificación
