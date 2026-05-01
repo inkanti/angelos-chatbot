@@ -34,6 +34,8 @@ const NEGOCIO = {
 // MENÚ PRINCIPAL
 // ============================================
 
+const VOLVER_MENU = `\n\n⬅️ **Escribe 0 para volver al menú principal**`;
+
 const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema y Minidonas!**
 
 Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
@@ -49,10 +51,6 @@ Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 
 👉 *Escribe el número de la opción que necesitas*`;
 
-// ============================================
-// SUBMENÚ 2: RECOMENDACIONES
-// ============================================
-
 const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 
 **1️⃣** Cita romántica 💕
@@ -64,11 +62,7 @@ const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 **7️⃣** Opciones veganas 🌱
 **0️⃣** Volver al menú principal
 
-👉 *Escribe el número de tu opción*`;
-
-// ============================================
-// RESPUESTAS DE PRODUCTOS
-// ============================================
+👉 *Escribe el número de tu opción*${VOLVER_MENU}`;
 
 const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 
@@ -86,11 +80,7 @@ const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 
 ➕ **Adicionales:** Chocolate, nueces, caramelo, sprinkles — $1.00 c/u
 
-💡 *¿Necesitas recomendación? Escribe **2** en el menú principal*`;
-
-// ============================================
-// RESPUESTAS POR OCASIÓN
-// ============================================
+💡 *¿Necesitas recomendación? Escribe **2** en el menú principal*${VOLVER_MENU}`;
 
 const RECOMENDACIONES = {
   '1': `💕 **PARA UNA CITA ROMÁNTICA:**
@@ -106,7 +96,7 @@ const RECOMENDACIONES = {
 
 💡 *Extras: Podemos agregar chocolate derretido y topping especial.*
 
-📲 ¿Quieres ordenar? Escríbenos por WhatsApp: ${NEGOCIO.whatsapp}`,
+📲 ¿Quieres ordenar? Escríbenos por WhatsApp: ${NEGOCIO.whatsapp}${VOLVER_MENU}`,
 
   '2': `👶 **PARA NIÑOS:**
 
@@ -118,7 +108,7 @@ const RECOMENDACIONES = {
    • Clásico que todos aman
    • Pueden comer las fresas con las manos
 
-💡 *Los peques adoran las minidonas. ¡Son nuestro bestseller infantil!*`,
+💡 *Los peques adoran las minidonas. ¡Son nuestro bestseller infantil!*${VOLVER_MENU}`,
 
   '3': `🎁 **PARA REGALAR:**
 
@@ -130,7 +120,7 @@ const RECOMENDACIONES = {
    • Para que compartan y disfruten juntos
    • Ideal para cumpleaños o aniversarios
 
-💡 *Podemos preparar un empaque especial. ¡Escríbenos por WhatsApp!*`,
+💡 *Podemos preparar un empaque especial. ¡Escríbenos por WhatsApp!*${VOLVER_MENU}`,
 
   '4': `🏠 **PARA COMPARTIR EN FAMILIA:**
 
@@ -142,7 +132,7 @@ const RECOMENDACIONES = {
    • Más variedad para todos
    • Cada uno elige lo que quiere
 
-💡 *Ideal para reuniones, cumpleaños o domingos en familia.*`,
+💡 *Ideal para reuniones, cumpleaños o domingos en familia.*${VOLVER_MENU}`,
 
   '5': `🌞 **PARA EL CALOR:**
 
@@ -154,7 +144,7 @@ const RECOMENDACIONES = {
    • Deliciosas a cualquier temperatura
    • Perfectas para merendar
 
-💡 *¡Las fresas son la reina del verano! 🍓*`,
+💡 *¡Las fresas son la reina del verano! 🍓*${VOLVER_MENU}`,
 
   '6': `⚠️ **OPCIONES SIN AZÚCAR / DIABÉTICOS:**
 
@@ -167,7 +157,7 @@ Lamentablemente, nuestros productos actuales contienen azúcar:
 
 **Consulta personalizada:**
 📲 WhatsApp: ${NEGOCIO.whatsapp}
-Podemos evaluar preparar algo especial según tus necesidades. 💚`,
+Podemos evaluar preparar algo especial según tus necesidades. 💚${VOLVER_MENU}`,
 
   '7': `🌱 **OPCIONES VEGANAS:**
 
@@ -178,23 +168,17 @@ Nuestra crema contiene lácteos 🥛, pero tenemos alternativas:
 **Consulta personalizada:**
 📲 WhatsApp: ${NEGOCIO.whatsapp}
 
-Estamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿`
+Estamos trabajando en opciones con crema vegetal. ¡Muy pronto! 🌿${VOLVER_MENU}`
 };
-
-// ============================================
-// OTRAS RESPUESTAS
-// ============================================
 
 const HORARIO_UBICACION = `🕐 **HORARIO Y UBICACIÓN:**
 
 📍 **Dirección:** ${NEGOCIO.direccion}
-🇳🇮 **País:** ${NEGOCIO.pais}
+🇸🇻 **País:** ${NEGOCIO.pais}
 🚚 **Delivery:** Disponible
 
 ⏰ **Horario:**
-• ${NEGOCIO.horario}
-
-📲 **WhatsApp:** ${NEGOCIO.whatsapp}`;
+• ${NEGOCIO.horario}${VOLVER_MENU}`;
 
 const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
 
@@ -207,9 +191,8 @@ const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
 💳 **Métodos de pago:**
 • Efectivo
 • Transferencia bancaria
-• Tarjeta de crédito/débito
-• PayPal
-• Pago contra entrega (disponible en zona cercana)`;
+• Chivo Wallet
+• Pago contra entrega (en otros métodos de pago cancelar antes y enviar comprobante de pago al WhatsApp 6128-0902)${VOLVER_MENU}`;
 
 const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 
@@ -219,7 +202,7 @@ const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 
 💡 *Aplica en compras directas por WhatsApp o en tienda.*
 
-🔗 **Nuestra página web:** ${NEGOCIO.paginaWeb}`;
+🔗 **Nuestra página web:** ${NEGOCIO.paginaWeb}${VOLVER_MENU}`;
 
 const CONTACTO = `📞 **CONTÁCTANOS:**
 
@@ -231,9 +214,7 @@ const CONTACTO = `📞 **CONTÁCTANOS:**
    👉 ${NEGOCIO.tiktokLink}
    (Videos, promociones, novedades)
 
-🌐 **Página Web:** ${NEGOCIO.paginaWeb}
-
-💬 *Responde rápido por WhatsApp para pedidos urgentes*`;
+🌐 **Página Web:** ${NEGOCIO.paginaWeb}${VOLVER_MENU}`;
 
 const HUMANO = `👩‍💼 **HABLAR CON UNA PERSONA:**
 
@@ -246,7 +227,18 @@ Te conecto con nuestro equipo humano:
 
 🔗 También puedes visitarnos en: ${NEGOCIO.paginaWeb}
 
-Gracias por preferir Angelos Fresas con Crema y Minidonas 🍓🍩`;
+Gracias por preferir Angelos Fresas con Crema y Minidonas 🍓🍩${VOLVER_MENU}`;
+
+const AGRADECIMIENTO = `🍓 ¡Con gusto! Estoy aquí cuando me necesites.
+
+Escribe **hola** o **menu** para ver las opciones.
+O visita nuestra web: ${NEGOCIO.paginaWeb}
+
+¡Que tengas un día dulce! 🍓🍩✨`;
+
+const NO_ENTENDIDO = `🤔 No estoy segura de entender. ¿Puedes elegir una opción?
+
+${MENU_PRINCIPAL}`;
 
 // ============================================
 // DETECTOR DE INTENCIONES
@@ -304,15 +296,8 @@ const RESPUESTAS = {
   'rec_calor': RECOMENDACIONES['5'],
   'rec_sin_azucar': RECOMENDACIONES['6'],
   'rec_vegano': RECOMENDACIONES['7'],
-  'agradecimiento': `🍓 ¡Con gusto! Estoy aquí cuando me necesites.
-
-Escribe **hola** o **menu** para ver las opciones.
-O visita nuestra web: ${NEGOCIO.paginaWeb}
-
-¡Que tengas un día dulce! 🍓🍩✨`,
-  'no_entendido': `🤔 No estoy segura de entender. ¿Puedes elegir una opción?
-
-${MENU_PRINCIPAL}`
+  'agradecimiento': AGRADECIMIENTO,
+  'no_entendido': NO_ENTENDIDO
 };
 
 // ============================================
