@@ -104,14 +104,16 @@
     }
 
     /* Quick Buttons */
-    .quick-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 15px 20px;
-      background: #fff5f5;
-      border-bottom: 1px solid #ffe0e0;
-    }
+  .quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 15px 20px;
+  background: #fff5f5;
+  border-bottom: 1px solid #ffe0e0;
+  justify-content: center;  /* CENTRAR HORIZONTALMENTE */
+  align-items: center;      /* CENTRAR VERTICALMENTE */
+}
 
     .quick-btn {
       padding: 8px 16px;
@@ -393,24 +395,19 @@ const API_URL = 'https://angelos-chatbot.onrender.com/chat';
     });
   }
 
-  function agregarMensaje(texto, esBot, fuente = '') {
-    const div = document.createElement('div');
-    div.className = `message ${esBot ? 'bot' : 'user'}`;
-    
-    let html = texto.replace(/\n/g, '<br>');
-    
-    if (esBot && fuente) {
-      const badgeClass = fuente === 'local' ? 'source-local' : 'source-gemini';
-      const badgeText = fuente === 'local' ? 'INSTANTÁNEO' : 'IA';
-      html += `<span class="source-badge ${badgeClass}">${badgeText}</span>`;
-    }
-    
-    html += `<span class="message-time">${obtenerHora()}</span>`;
-    div.innerHTML = html;
-    
-    mensajesDiv.appendChild(div);
-    mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
-  }
+function agregarMensaje(texto, esBot, fuente = '') {
+  const div = document.createElement('div');
+  div.className = `message ${esBot ? 'bot' : 'user'}`;
+  
+  let html = texto.replace(/\n/g, '<br>');
+  
+  // QUITAMOS EL BADGE - solo mostramos el mensaje limpio
+  html += `<span class="message-time">${obtenerHora()}</span>`;
+  div.innerHTML = html;
+  
+  mensajesDiv.appendChild(div);
+  mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+}
 
   function mostrarTyping() {
     const div = document.createElement('div');
