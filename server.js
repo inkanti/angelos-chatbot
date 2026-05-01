@@ -6,20 +6,55 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
 const app = express();
-
-// Permitir que tu página web hable con este servidor
 app.use(cors());
 app.use(express.json());
 
-// Inicializar Gemini con tu API Key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-//const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-//const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });gemini-pro
-const model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
+// ============================================
+// CONFIGURACIÓN GEMINI - API v1beta
+// ============================================
 
+const API_KEY = process.env.GEMINI_API_KEY;
+
+// Función para llamar a Gemini directamente vía fetch (más compatible)
+async function callGemini(prompt) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 150
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gemini API error:', errorData);
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      return data.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error('Respuesta inesperada de Gemini');
+    }
+    
+  } catch (error) {
+    console.error('Error en callGemini:', error);
+    throw error;
+  }
+}
 
 // ============================================
 // BASE DE CONOCIMIENTO LOCAL (RESPUESTAS GRATIS)
@@ -44,37 +79,21 @@ const FAQ = {
 };
 
 // ============================================
-// DETECTOR DE INTENCIONES (ahorra API calls)
+// DETECTOR DE INTENCIONES
 // ============================================
 
 function detectarIntencion(mensaje) {
   const msg = mensaje.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   
-  // Precios
   if (msg.match(/precio|cuanto|cuesta|vale|costo|menu|catalogo|productos/)) return 'precio';
-  
-  // Horario
   if (msg.match(/hora|horario|abierto|cierran|atienden|dia|domingo|sabado/)) return 'horario';
-  
-  // Envío
   if (msg.match(/envio|delivery|mandan|envian|domicilio|reparto|zona/)) return 'envio';
-  
-  // Ubicación
   if (msg.match(/donde|ubicacion|direccion|local|tienda|queda|encuentran|maps/)) return 'ubicacion';
-  
-  // Menú completo
   if (msg.match(/menu|tienen|opciones|que venden|especialidades|platillos/)) return 'menu';
-  
-  // Pago
   if (msg.match(/pago|pagar|tarjeta|efectivo|transferencia|paypal|contra entrega/)) return 'pago';
-  
-  // Contacto
   if (msg.match(/contacto|whatsapp|telefono|llamar|instagram|facebook|redes/)) return 'contacto';
-  
-  // Promociones
   if (msg.match(/promo|descuento|oferta|descuentos|2x1|gratis|codigo/)) return 'promocion';
   
-  // Necesita IA (pregunta compleja)
   return 'ia';
 }
 
@@ -95,7 +114,7 @@ app.post('/chat', async (req, res) => {
   
   const intencion = detectarIntencion(mensaje);
   
-  // ✅ RESPUESTA LOCAL (GRATIS, sin usar API)
+  // ✅ RESPUESTA LOCAL (GRATIS)
   if (intencion !== 'ia') {
     return res.json({
       respuesta: FAQ[intencion],
@@ -104,7 +123,7 @@ app.post('/chat', async (req, res) => {
     });
   }
   
-  // 🤖 RESPUESTA CON GEMINI (usa API, pero es GRATIS hasta 60 req/min)
+  // 🤖 RESPUESTA CON GEMINI API v1beta
   try {
     const prompt = `Eres "Fresi" 🍓, la asistente virtual amable y entusiasta de "Angelos Fresas con Crema", un negocio de postres con fresas en Guatemala.
 
@@ -126,11 +145,10 @@ REGLAS IMPORTANTES:
 
 El cliente pregunta: "${mensaje}"`;
 
-    const result = await model.generateContent(prompt);
-    const respuesta = result.response.text();
+    const respuestaIA = await callGemini(prompt);
     
     res.json({
-      respuesta: respuesta,
+      respuesta: respuestaIA,
       tipo: 'ia',
       fuente: 'gemini'
     });
