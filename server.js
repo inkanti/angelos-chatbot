@@ -1,19 +1,17 @@
 // ============================================
-// BACKEND - Chatbot Angelos con Menús Interactivos
+// BACKEND - Chatbot Angelos Fresas con Crema y Minidonas
+// 100% LOCAL - Sin API externa
 // ============================================
 
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = process.env.GEMINI_API_KEY;
-
 // ============================================
-// DATOS REALES DEL NEGOCIO
+// DATOS DEL NEGOCIO
 // ============================================
 
 const NEGOCIO = {
@@ -30,11 +28,11 @@ const NEGOCIO = {
   envioDepartamentos: '$5.00 (24-48 horas)'
 };
 
+const VOLVER_MENU = `\n\n⬅️ **Escribe 0 para volver al menú principal**`;
+
 // ============================================
 // MENÚ PRINCIPAL
 // ============================================
-
-const VOLVER_MENU = `\n\n⬅️ **Escribe 0 para volver al menú principal**`;
 
 const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema y Minidonas!**
 
@@ -51,6 +49,10 @@ Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 
 👉 *Escribe el número de la opción que necesitas*`;
 
+// ============================================
+// SUBMENÚ 2: RECOMENDACIONES
+// ============================================
+
 const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 
 **1️⃣** Cita romántica 💕
@@ -63,6 +65,10 @@ const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 **0️⃣** Volver al menú principal
 
 👉 *Escribe el número de tu opción*${VOLVER_MENU}`;
+
+// ============================================
+// RESPUESTAS
+// ============================================
 
 const PRODUCTOS = `📋 **NUESTROS PRODUCTOS:**
 
@@ -193,9 +199,7 @@ const ENVIOS_PAGOS = `🚚 **ENVÍOS:**
 • Efectivo
 • Transferencia bancaria
 • Chivo Wallet
-• Pago contra entrega (en otros métodos de pago cancelar antes y enviar comprobante de pago al WhatsApp 6128-0902)
-
-⬅️ **Escribe 0 para volver al menú principal**`;
+• Pago contra entrega (en otros métodos de pago cancelar antes y enviar comprobante de pago al WhatsApp 6128-0902)${VOLVER_MENU}`;
 
 const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 
@@ -244,45 +248,6 @@ const NO_ENTENDIDO = `🤔 No estoy segura de entender. ¿Puedes elegir una opci
 ${MENU_PRINCIPAL}`;
 
 // ============================================
-// DETECTOR DE INTENCIONES
-// ============================================
-
-function detectarIntencion(mensaje) {
-  const msg = mensaje.toLowerCase().trim();
-  
-  // VOLVER AL MENÚ PRINCIPAL (siempre prioritario)
-  if (msg === '0' || msg === 'menu' || msg === 'inicio' || msg === 'principal' || msg === 'volver' || msg === 'atras') return 'menu_principal';
-  
-  // SALUDOS
-  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
-  
-  // NÚMEROS DEL MENÚ PRINCIPAL
-  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) return 'productos';
-  if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) return 'submenu_recomendaciones';
-  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local|amatepec|pasaje|colonia)$/)) return 'horario_ubicacion';
-  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) return 'envios_pagos';
-  if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
-  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) return 'contacto';
-  
-  // HABLAR CON PERSONA (solo palabras específicas, NO el número 0)
-  if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') return 'humano';
-  
-  // NÚMEROS DEL SUBMENÚ DE RECOMENDACIONES
-  if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) return 'rec_cita';
-  if (msg === '2' || msg.match(/^(ninos|niños|peques|bebe|infantil|hijo|hija|escolar)$/)) return 'rec_ninos';
-  if (msg === '3' || msg.match(/^(regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple)$/)) return 'rec_regalo';
-  if (msg === '4' || msg.match(/^(compartir|familia|amigos|reunion|fiesta|grupo|varios)$/)) return 'rec_compartir';
-  if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) return 'rec_calor';
-  if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) return 'rec_sin_azucar';
-  if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
-  
-  // PREGUNTAS ESPECÍFICAS
-  if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
-  
-  // SI NO ENTIENDE
-  return 'no_entendido';
-}
-// ============================================
 // RESPUESTAS RÁPIDAS
 // ============================================
 
@@ -307,7 +272,47 @@ const RESPUESTAS = {
 };
 
 // ============================================
-// ENDPOINT PRINCIPAL DEL CHATBOT
+// DETECTOR DE INTENCIONES
+// ============================================
+
+function detectarIntencion(mensaje) {
+  const msg = mensaje.toLowerCase().trim();
+  
+  // VOLVER AL MENÚ PRINCIPAL
+  if (msg === '0' || msg === 'menu' || msg === 'inicio' || msg === 'principal' || msg === 'volver' || msg === 'atras') return 'menu_principal';
+  
+  // SALUDOS
+  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
+  
+  // MENÚ PRINCIPAL
+  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) return 'productos';
+  if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) return 'submenu_recomendaciones';
+  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local|amatepec|pasaje|colonia)$/)) return 'horario_ubicacion';
+  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) return 'envios_pagos';
+  if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
+  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) return 'contacto';
+  
+  // HABLAR CON PERSONA (solo palabras específicas, NO el número 0)
+  if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') return 'humano';
+  
+  // SUBMENÚ RECOMENDACIONES
+  if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) return 'rec_cita';
+  if (msg === '2' || msg.match(/^(ninos|niños|peques|bebe|infantil|hijo|hija|escolar)$/)) return 'rec_ninos';
+  if (msg === '3' || msg.match(/^(regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple)$/)) return 'rec_regalo';
+  if (msg === '4' || msg.match(/^(compartir|familia|amigos|reunion|fiesta|grupo|varios)$/)) return 'rec_compartir';
+  if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) return 'rec_calor';
+  if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) return 'rec_sin_azucar';
+  if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
+  
+  // AGRADECIMIENTOS
+  if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
+  
+  // NO ENTENDIDO
+  return 'no_entendido';
+}
+
+// ============================================
+// ENDPOINTS
 // ============================================
 
 app.post('/chat', async (req, res) => {
@@ -323,7 +328,6 @@ app.post('/chat', async (req, res) => {
   
   const intencion = detectarIntencion(mensaje);
   
-  // ✅ RESPUESTA LOCAL INMEDIATA (100% GRATIS)
   if (RESPUESTAS[intencion]) {
     return res.json({
       respuesta: RESPUESTAS[intencion],
@@ -332,7 +336,6 @@ app.post('/chat', async (req, res) => {
     });
   }
   
-  // Si llega aquí, algo raro pasó
   res.json({
     respuesta: MENU_PRINCIPAL,
     tipo: 'menu',
@@ -340,7 +343,6 @@ app.post('/chat', async (req, res) => {
   });
 });
 
-// Endpoint de verificación
 app.get('/', (req, res) => {
   res.json({ 
     status: '✅ Angelos Chatbot activo',
