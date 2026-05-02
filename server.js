@@ -1,5 +1,5 @@
 // ============================================
-// BACKEND - Chatbot Angelos con Estado de Conversación
+// BACKEND - Chatbot Angelos con Sesión
 // ============================================
 
 const express = require('express');
@@ -10,21 +10,22 @@ app.use(cors());
 app.use(express.json());
 
 // ============================================
-// ESTADO DE CONVERSACIÓN (memoria por sesión simple)
+// ESTADO DE CONVERSACIÓN (por sessionId)
 // ============================================
 
-// Guarda en qué menú está cada usuario (por IP simple)
 const estadoUsuarios = {};
 
-function obtenerEstado(ip) {
-  if (!estadoUsuarios[ip]) {
-    estadoUsuarios[ip] = { menu: 'principal' };
+function obtenerEstado(sessionId) {
+  if (!sessionId || !estadoUsuarios[sessionId]) {
+    return { menu: 'principal' };
   }
-  return estadoUsuarios[ip];
+  return estadoUsuarios[sessionId];
 }
 
-function cambiarEstado(ip, menu) {
-  estadoUsuarios[ip] = { menu: menu };
+function cambiarEstado(sessionId, menu) {
+  if (sessionId) {
+    estadoUsuarios[sessionId] = { menu: menu };
+  }
 }
 
 // ============================================
@@ -261,7 +262,7 @@ const NO_ENTENDIDO = `🤔 No estoy segura de entender. ¿Puedes elegir una opci
 ${MENU_PRINCIPAL}`;
 
 // ============================================
-// DETECTOR INTELIGENTE CON ESTADO
+// PROCESADOR INTELIGENTE CON ESTADO
 // ============================================
 
 function procesarMensaje(mensaje, estado) {
@@ -302,7 +303,7 @@ function procesarMensaje(mensaje, estado) {
     if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) {
       return { respuesta: RECOMENDACIONES['7'], nuevoEstado: 'recomendaciones' };
     }
-    // Si escribe algo que no entendemos en el submenú, mostrar submenú de nuevo
+    // Si no entiende, repetir submenú
     return { respuesta: SUBMENU_RECOMENDACIONES, nuevoEstado: 'recomendaciones' };
   }
   
@@ -328,7 +329,7 @@ function procesarMensaje(mensaje, estado) {
     return { respuesta: CONTACTO, nuevoEstado: 'principal' };
   }
   
-  // HABLAR CON PERSONA (solo palabras específicas)
+  // HABLAR CON PERSONA
   if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') {
     return { respuesta: HUMANO, nuevoEstado: 'principal' };
   }
@@ -347,8 +348,7 @@ function procesarMensaje(mensaje, estado) {
 // ============================================
 
 app.post('/chat', async (req, res) => {
-  const { mensaje } = req.body;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'anon';
+  const { mensaje, sessionId } = req.body;
   
   if (!mensaje || mensaje.trim() === '') {
     return res.json({
@@ -358,11 +358,11 @@ app.post('/chat', async (req, res) => {
     });
   }
   
-  const estado = obtenerEstado(ip);
+  const estado = obtenerEstado(sessionId);
   const resultado = procesarMensaje(mensaje, estado);
   
-  // Actualizar estado del usuario
-  cambiarEstado(ip, resultado.nuevoEstado);
+  // Actualizar estado
+  cambiarEstado(sessionId, resultado.nuevoEstado);
   
   res.json({
     respuesta: resultado.respuesta,
