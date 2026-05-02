@@ -430,8 +430,17 @@
   // PRODUCCIÓN (Render):
   const API_URL = 'https://angelos-chatbot.onrender.com/chat';
 
-  const mensajesDiv = document.getElementById('mensajes');
-  const input = document.getElementById('inputMensaje');
+// Generar sessionId único y guardarlo
+let sessionId = localStorage.getItem('angelos_session');
+if (!sessionId) {
+  sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('angelos_session', sessionId);
+}
+
+const mensajesDiv = document.getElementById('mensajes');
+const input = document.getElementById('inputMensaje');
+  
+ 
 
   function obtenerHora() {
     const ahora = new Date();
@@ -468,56 +477,52 @@
   }
 
   async function enviarMensaje() {
-    const texto = input.value.trim();
-    if (!texto) return;
+  const texto = input.value.trim();
+  if (!texto) return;
 
-    agregarMensaje(texto, false);
-    input.value = '';
-    input.focus();
-    mostrarTyping();
+  agregarMensaje(texto, false);
+  input.value = '';
+  input.focus();
+  mostrarTyping();
 
-    try {
-      const respuesta = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ mensaje: texto })
-      });
+  try {
+    const respuesta = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ 
+        mensaje: texto,
+        sessionId: sessionId  // ← ENVIAR sessionId
+      })
+    });
 
-      if (!respuesta.ok) {
-        throw new Error(`Error HTTP: ${respuesta.status}`);
-      }
-
-      const datos = await respuesta.json();
-      ocultarTyping();
-      agregarMensaje(datos.respuesta, true);
-      
-      console.log('📊 Respuesta:', {
-        tipo: datos.tipo,
-        fuente: datos.fuente
-      });
-
-    } catch (error) {
-      console.error('❌ Error:', error);
-      ocultarTyping();
-      agregarMensaje(
-        '🍓 ¡Ups! Tuve un problemita de conexión. Intenta de nuevo o visita nuestra web: https://tguw4a2gzlr42.kimi.page/',
-        true
-      );
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
     }
-  }
 
-  function enviarRapido(texto) {
-    input.value = texto;
-    enviarMensaje();
-  }
+    const datos = await respuesta.json();
+    ocultarTyping();
+    agregarMensaje(datos.respuesta, true);
+    
+    console.log('📊 Respuesta:', {
+      tipo: datos.tipo,
+      fuente: datos.fuente
+    });
 
-  setTimeout(() => {
-    input.focus();
-  }, 500);
-</script>
+  } catch (error) {
+    console.error('❌ Error:', error);
+    ocultarTyping();
+    agregarMensaje(
+      '🍓 ¡Ups! Tuve un problemita de conexión. Intenta de nuevo o visita nuestra web: https://tguw4a2gzlr42.kimi.page/',
+      true
+    );
+  }
+}
+
+
+  </script>
 
 </body>
 </html>
