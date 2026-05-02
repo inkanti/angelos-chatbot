@@ -180,19 +180,22 @@ const HORARIO_UBICACION = `🕐 **HORARIO Y UBICACIÓN:**
 ⏰ **Horario:**
 • ${NEGOCIO.horario}${VOLVER_MENU}`;
 
-const ENVIOS_PAGOS = `🚚 **ENVÍOS Y PAGOS:**
+const ENVIOS_PAGOS = `🚚 **ENVÍOS:**
 
-📦 **Envíos en El Salvador:**
-• Ciudad: ${NEGOCIO.envioCiudad}
-• Departamentos: ${NEGOCIO.envioDepartamentos}
+📦 **Dentro de la colonia (calle principal):**
+• ¡Envío GRATIS!
+
+📦 **Fuera de la colonia:**
 • Pedido mínimo: $10.00
-• ¡Envío GRATIS en pedidos +$25!
+• Costo según zona
 
 💳 **Métodos de pago:**
 • Efectivo
 • Transferencia bancaria
 • Chivo Wallet
-• Pago contra entrega (en otros métodos de pago cancelar antes y enviar comprobante de pago al WhatsApp 6128-0902)${VOLVER_MENU}`;
+• Pago contra entrega (en otros métodos de pago cancelar antes y enviar comprobante de pago al WhatsApp 6128-0902)
+
+⬅️ **Escribe 0 para volver al menú principal**`;
 
 const PROMOCIONES = `🎉 **PROMOCIONES ACTIVAS:**
 
@@ -247,8 +250,11 @@ ${MENU_PRINCIPAL}`;
 function detectarIntencion(mensaje) {
   const msg = mensaje.toLowerCase().trim();
   
-  // SALUDOS Y MENÚ PRINCIPAL
-  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|menu|inicio|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
+  // VOLVER AL MENÚ PRINCIPAL (siempre prioritario)
+  if (msg === '0' || msg === 'menu' || msg === 'inicio' || msg === 'principal' || msg === 'volver' || msg === 'atras') return 'menu_principal';
+  
+  // SALUDOS
+  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
   
   // NÚMEROS DEL MENÚ PRINCIPAL
   if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) return 'productos';
@@ -257,7 +263,9 @@ function detectarIntencion(mensaje) {
   if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) return 'envios_pagos';
   if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
   if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) return 'contacto';
-  if (msg === '0' || msg.match(/^(persona|humano|agente|vendedor|empleado|hablar con alguien|atencion)$/)) return 'humano';
+  
+  // HABLAR CON PERSONA (solo palabras específicas, NO el número 0)
+  if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') return 'humano';
   
   // NÚMEROS DEL SUBMENÚ DE RECOMENDACIONES
   if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) return 'rec_cita';
@@ -267,7 +275,6 @@ function detectarIntencion(mensaje) {
   if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) return 'rec_calor';
   if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) return 'rec_sin_azucar';
   if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
-  if (msg === '0' || msg.match(/^(volver|atras|menu principal|inicio|principal)$/)) return 'menu_principal';
   
   // PREGUNTAS ESPECÍFICAS
   if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
@@ -275,7 +282,6 @@ function detectarIntencion(mensaje) {
   // SI NO ENTIENDE
   return 'no_entendido';
 }
-
 // ============================================
 // RESPUESTAS RÁPIDAS
 // ============================================
