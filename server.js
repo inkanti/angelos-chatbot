@@ -1,6 +1,5 @@
 // ============================================
-// BACKEND - Chatbot Angelos Fresas con Crema y Minidonas
-// 100% LOCAL - Sin API externa
+// BACKEND - Chatbot Angelos con Estado de Conversación
 // ============================================
 
 const express = require('express');
@@ -9,6 +8,24 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ============================================
+// ESTADO DE CONVERSACIÓN (memoria por sesión simple)
+// ============================================
+
+// Guarda en qué menú está cada usuario (por IP simple)
+const estadoUsuarios = {};
+
+function obtenerEstado(ip) {
+  if (!estadoUsuarios[ip]) {
+    estadoUsuarios[ip] = { menu: 'principal' };
+  }
+  return estadoUsuarios[ip];
+}
+
+function cambiarEstado(ip, menu) {
+  estadoUsuarios[ip] = { menu: menu };
+}
 
 // ============================================
 // DATOS DEL NEGOCIO
@@ -31,7 +48,7 @@ const NEGOCIO = {
 const VOLVER_MENU = `\n\n⬅️ **Escribe 0 para volver al menú principal**`;
 
 // ============================================
-// MENÚ PRINCIPAL
+// MENÚS
 // ============================================
 
 const MENU_PRINCIPAL = `🍓 **¡Bienvenido a Angelos Fresas con Crema y Minidonas!**
@@ -48,10 +65,6 @@ Soy **Fresi**, tu asistente virtual. ¿Qué necesitas?
 **0️⃣** Hablar con una persona
 
 👉 *Escribe el número de la opción que necesitas*`;
-
-// ============================================
-// SUBMENÚ 2: RECOMENDACIONES
-// ============================================
 
 const SUBMENU_RECOMENDACIONES = `💕 **¿Para qué ocasión necesitas?**
 
@@ -248,67 +261,85 @@ const NO_ENTENDIDO = `🤔 No estoy segura de entender. ¿Puedes elegir una opci
 ${MENU_PRINCIPAL}`;
 
 // ============================================
-// RESPUESTAS RÁPIDAS
+// DETECTOR INTELIGENTE CON ESTADO
 // ============================================
 
-const RESPUESTAS = {
-  'menu_principal': MENU_PRINCIPAL,
-  'productos': PRODUCTOS,
-  'submenu_recomendaciones': SUBMENU_RECOMENDACIONES,
-  'horario_ubicacion': HORARIO_UBICACION,
-  'envios_pagos': ENVIOS_PAGOS,
-  'promociones': PROMOCIONES,
-  'contacto': CONTACTO,
-  'humano': HUMANO,
-  'rec_cita': RECOMENDACIONES['1'],
-  'rec_ninos': RECOMENDACIONES['2'],
-  'rec_regalo': RECOMENDACIONES['3'],
-  'rec_compartir': RECOMENDACIONES['4'],
-  'rec_calor': RECOMENDACIONES['5'],
-  'rec_sin_azucar': RECOMENDACIONES['6'],
-  'rec_vegano': RECOMENDACIONES['7'],
-  'agradecimiento': AGRADECIMIENTO,
-  'no_entendido': NO_ENTENDIDO
-};
-
-// ============================================
-// DETECTOR DE INTENCIONES
-// ============================================
-
-function detectarIntencion(mensaje) {
+function procesarMensaje(mensaje, estado) {
   const msg = mensaje.toLowerCase().trim();
   
-  // VOLVER AL MENÚ PRINCIPAL
-  if (msg === '0' || msg === 'menu' || msg === 'inicio' || msg === 'principal' || msg === 'volver' || msg === 'atras') return 'menu_principal';
+  // SIEMPRE permitir volver al menú principal
+  if (msg === '0' || msg === 'menu' || msg === 'inicio' || msg === 'principal' || msg === 'volver' || msg === 'atras') {
+    return { respuesta: MENU_PRINCIPAL, nuevoEstado: 'principal' };
+  }
   
   // SALUDOS
-  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|empezar|comenzar|opciones|ayuda|info)$/)) return 'menu_principal';
+  if (msg.match(/^(hola|buenos|buenas|hey|hi|hello|empezar|comenzar|opciones|ayuda|info)$/)) {
+    return { respuesta: MENU_PRINCIPAL, nuevoEstado: 'principal' };
+  }
   
+  // ============================================
+  // SI ESTAMOS EN SUBMENÚ DE RECOMENDACIONES
+  // ============================================
+  if (estado.menu === 'recomendaciones') {
+    if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) {
+      return { respuesta: RECOMENDACIONES['1'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '2' || msg.match(/^(ninos|niños|peques|bebe|infantil|hijo|hija|escolar)$/)) {
+      return { respuesta: RECOMENDACIONES['2'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '3' || msg.match(/^(regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple)$/)) {
+      return { respuesta: RECOMENDACIONES['3'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '4' || msg.match(/^(compartir|familia|amigos|reunion|fiesta|grupo|varios)$/)) {
+      return { respuesta: RECOMENDACIONES['4'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) {
+      return { respuesta: RECOMENDACIONES['5'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) {
+      return { respuesta: RECOMENDACIONES['6'], nuevoEstado: 'recomendaciones' };
+    }
+    if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) {
+      return { respuesta: RECOMENDACIONES['7'], nuevoEstado: 'recomendaciones' };
+    }
+    // Si escribe algo que no entendemos en el submenú, mostrar submenú de nuevo
+    return { respuesta: SUBMENU_RECOMENDACIONES, nuevoEstado: 'recomendaciones' };
+  }
+  
+  // ============================================
   // MENÚ PRINCIPAL
-  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) return 'productos';
-  if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) return 'submenu_recomendaciones';
-  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local|amatepec|pasaje|colonia)$/)) return 'horario_ubicacion';
-  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) return 'envios_pagos';
-  if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) return 'promociones';
-  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) return 'contacto';
+  // ============================================
+  if (msg === '1' || msg.match(/^(productos|precios|especialidades|ver productos|que tienen|catalogo|fresas|minidonas|donas)$/)) {
+    return { respuesta: PRODUCTOS, nuevoEstado: 'principal' };
+  }
+  if (msg === '2' || msg.match(/^(recomendaciones|recomienda|que me recomiendas|ocasion|elegir|ayudame|indeciso)$/)) {
+    return { respuesta: SUBMENU_RECOMENDACIONES, nuevoEstado: 'recomendaciones' };
+  }
+  if (msg === '3' || msg.match(/^(horario|ubicacion|donde|a que hora|direccion|local|amatepec|pasaje|colonia)$/)) {
+    return { respuesta: HORARIO_UBICACION, nuevoEstado: 'principal' };
+  }
+  if (msg === '4' || msg.match(/^(envios|envio|pagos|pago|delivery|domicilio|metodos de pago|enviar|mandar)$/)) {
+    return { respuesta: ENVIOS_PAGOS, nuevoEstado: 'principal' };
+  }
+  if (msg === '5' || msg.match(/^(promociones|promo|descuento|oferta|descuentos|2x1|codigo)$/)) {
+    return { respuesta: PROMOCIONES, nuevoEstado: 'principal' };
+  }
+  if (msg === '6' || msg.match(/^(contacto|whatsapp|telefono|llamar|tiktok|redes|hablar|pagina web|web|link)$/)) {
+    return { respuesta: CONTACTO, nuevoEstado: 'principal' };
+  }
   
-  // HABLAR CON PERSONA (solo palabras específicas, NO el número 0)
-  if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') return 'humano';
-  
-  // SUBMENÚ RECOMENDACIONES
-  if (msg === '1' || msg.match(/^(cita|romantica|novia|novio|pareja|aniversario|san valentin|enamorados)$/)) return 'rec_cita';
-  if (msg === '2' || msg.match(/^(ninos|niños|peques|bebe|infantil|hijo|hija|escolar)$/)) return 'rec_ninos';
-  if (msg === '3' || msg.match(/^(regalo|regalar|obsequio|detalle|sorpresa|cumpleanos|cumple)$/)) return 'rec_regalo';
-  if (msg === '4' || msg.match(/^(compartir|familia|amigos|reunion|fiesta|grupo|varios)$/)) return 'rec_compartir';
-  if (msg === '5' || msg.match(/^(calor|refrescante|frio|verano|sed|bebida)$/)) return 'rec_calor';
-  if (msg === '6' || msg.match(/^(sin azucar|diabetico|diabetes|bajo azucar|sin endulzar)$/)) return 'rec_sin_azucar';
-  if (msg === '7' || msg.match(/^(vegano|vegana|sin lacteos|sin leche|sin crema)$/)) return 'rec_vegano';
+  // HABLAR CON PERSONA (solo palabras específicas)
+  if (msg === '00' || msg === 'persona' || msg === 'humano' || msg === 'agente' || msg === 'vendedor' || msg === 'empleado' || msg === 'hablar con alguien' || msg === 'atencion') {
+    return { respuesta: HUMANO, nuevoEstado: 'principal' };
+  }
   
   // AGRADECIMIENTOS
-  if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) return 'agradecimiento';
+  if (msg.match(/^(gracias|thank|thanks|ok|perfecto|excelente|bueno|genial)$/)) {
+    return { respuesta: AGRADECIMIENTO, nuevoEstado: 'principal' };
+  }
   
   // NO ENTENDIDO
-  return 'no_entendido';
+  return { respuesta: NO_ENTENDIDO, nuevoEstado: 'principal' };
 }
 
 // ============================================
@@ -317,6 +348,7 @@ function detectarIntencion(mensaje) {
 
 app.post('/chat', async (req, res) => {
   const { mensaje } = req.body;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'anon';
   
   if (!mensaje || mensaje.trim() === '') {
     return res.json({
@@ -326,18 +358,14 @@ app.post('/chat', async (req, res) => {
     });
   }
   
-  const intencion = detectarIntencion(mensaje);
+  const estado = obtenerEstado(ip);
+  const resultado = procesarMensaje(mensaje, estado);
   
-  if (RESPUESTAS[intencion]) {
-    return res.json({
-      respuesta: RESPUESTAS[intencion],
-      tipo: 'menu',
-      fuente: 'local'
-    });
-  }
+  // Actualizar estado del usuario
+  cambiarEstado(ip, resultado.nuevoEstado);
   
   res.json({
-    respuesta: MENU_PRINCIPAL,
+    respuesta: resultado.respuesta,
     tipo: 'menu',
     fuente: 'local'
   });
